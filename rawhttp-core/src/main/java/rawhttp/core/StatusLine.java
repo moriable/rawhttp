@@ -40,7 +40,7 @@ public class StatusLine implements StartLine {
 
     @Override
     public void writeTo(OutputStream outputStream) throws IOException {
-        byte[] bytes = toString().getBytes(StandardCharsets.US_ASCII);
+        byte[] bytes = toString().getBytes(StandardCharsets.UTF_8);
         outputStream.write(bytes);
         outputStream.write('\r');
         outputStream.write('\n');
