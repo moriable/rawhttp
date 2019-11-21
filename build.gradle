@@ -1,8 +1,8 @@
-plugins {
-    id "org.jetbrains.kotlin.jvm" apply false
-    id 'com.gradle.build-scan' version '2.2.1'
-    id 'idea'
-}
+//plugins {
+//    id "org.jetbrains.kotlin.jvm" apply false
+//    id 'com.gradle.build-scan' version '2.2.1'
+//    id 'idea'
+//}
 
 subprojects {
     group 'com.athaydes.rawhttp'
@@ -17,14 +17,14 @@ subprojects {
     apply plugin: 'java'
 }
 
-task testReport(type: TestReport) {
-    destinationDir = file("$buildDir/test-results")
-    // Include the results from the `test` task in all subprojects
-    reportOn subprojects*.test
-}
+//task testReport(type: TestReport) {
+//    destinationDir = file("$buildDir/test-results")
+//    // Include the results from the `test` task in all subprojects
+//    reportOn subprojects*.test
+//}
 
-buildScan {
-    termsOfServiceUrl = 'https://gradle.com/terms-of-service'
-    termsOfServiceAgree = 'yes'
-}
+//buildScan {
+//    termsOfServiceUrl = 'https://gradle.com/terms-of-service'
+//    termsOfServiceAgree = 'yes'
+//}
 
