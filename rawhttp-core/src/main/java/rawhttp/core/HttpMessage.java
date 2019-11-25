@@ -98,6 +98,11 @@ public abstract class HttpMessage implements Writable {
         writeTo(out, 4096);
     }
 
+    @Override
+    public void writeTo(OutputStream[] outputStream) throws IOException {
+        writeTo(outputStream, 4096);
+    }
+
     /**
      * Write this HTTP message to the given output.
      *
@@ -106,8 +111,12 @@ public abstract class HttpMessage implements Writable {
      * @throws IOException if an error occurs while writing the message
      */
     public void writeTo(OutputStream out, int bufferSize) throws IOException {
-        getStartLine().writeTo(out);
-        getHeaders().writeTo(out);
+        writeTo(new OutputStream[] {out}, bufferSize);
+    }
+
+    public void writeTo(OutputStream[] out, int bufferSize) throws IOException {
+        getStartLine().writeTo(out[0]);
+        getHeaders().writeTo(out[0]);
         Optional<? extends BodyReader> body = getBody();
         if (body.isPresent()) {
             try (BodyReader bodyReader = body.get()) {

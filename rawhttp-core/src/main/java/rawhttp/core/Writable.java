@@ -17,4 +17,6 @@ public interface Writable {
      * @throws IOException if an error occurs while writing to the given stream
      */
     void writeTo(OutputStream outputStream) throws IOException;
+
+    void writeTo(OutputStream[] outputStream) throws IOException;
 }

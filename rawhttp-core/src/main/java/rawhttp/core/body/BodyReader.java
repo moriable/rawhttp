@@ -68,6 +68,11 @@ public abstract class BodyReader implements Writable, Closeable {
         writeTo(out, BodyConsumer.DEFAULT_BUFFER_SIZE);
     }
 
+    @Override
+    public void writeTo(OutputStream[] outputStream) throws IOException {
+        writeTo(outputStream, BodyConsumer.DEFAULT_BUFFER_SIZE);
+    }
+
     /**
      * Read the raw HTTP message body, simultaneously writing it to the given output.
      * <p>
@@ -80,6 +85,10 @@ public abstract class BodyReader implements Writable, Closeable {
      * @see BodyReader#writeDecodedTo(OutputStream, int)
      */
     public void writeTo(OutputStream out, int bufferSize) throws IOException {
+        framedBody.getBodyConsumer().consumeInto(asRawStream(), out, bufferSize);
+    }
+
+    public void writeTo(OutputStream out[], int bufferSize) throws IOException {
         framedBody.getBodyConsumer().consumeInto(asRawStream(), out, bufferSize);
     }
 

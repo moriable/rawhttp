@@ -59,6 +59,11 @@ public abstract class BodyConsumer {
             OutputStream outputStream,
             int bufferSize) throws IOException;
 
+    public abstract void consumeInto(
+            InputStream inputStream,
+            OutputStream[] outputStream,
+            int bufferSize) throws IOException;
+
     /**
      * Consume the HTTP message body fully, excluding framing metadata, into the given output stream.
      * <p>
@@ -90,6 +95,14 @@ public abstract class BodyConsumer {
                 InputStream inputStream,
                 OutputStream outputStream,
                 int bufferSize) throws IOException {
+            consumeInto(inputStream,
+                    new OutputStream[] {outputStream},
+                    bufferSize
+            );
+        }
+
+        @Override
+        public void consumeInto(InputStream inputStream, OutputStream[] outputStream, int bufferSize) throws IOException {
             bodyParser.parseChunkedBody(inputStream,
                     chunk -> chunk.writeTo(outputStream),
                     trailer -> trailer.writeTo(outputStream));
@@ -135,6 +148,13 @@ public abstract class BodyConsumer {
         public void consumeInto(InputStream inputStream,
                                 OutputStream outputStream,
                                 int bufferSize) throws IOException {
+            consumeInto(inputStream,
+                    new OutputStream[]{outputStream},
+                    bufferSize);
+        }
+
+        @Override
+        public void consumeInto(InputStream inputStream, OutputStream[] outputStream, int bufferSize) throws IOException {
             readAndWriteBytesUpToLength(inputStream, bodyLength, outputStream, bufferSize);
         }
 
@@ -145,7 +165,7 @@ public abstract class BodyConsumer {
 
         private static void readAndWriteBytesUpToLength(InputStream inputStream,
                                                         long bodyLength,
-                                                        OutputStream outputStream,
+                                                        OutputStream[] outputStream,
                                                         int bufferSize) throws IOException {
             if (bufferSize <= 0) {
                 bufferSize = DEFAULT_BUFFER_SIZE;
@@ -158,7 +178,9 @@ public abstract class BodyConsumer {
                 if (actuallyRead < 0) {
                     throw new IOException("InputStream provided " + offset + ", but " + bodyLength + " were expected");
                 } else {
-                    outputStream.write(bytes, 0, actuallyRead);
+                    for (OutputStream stream : outputStream) {
+                        stream.write(bytes, 0, actuallyRead);
+                    }
                 }
                 offset += actuallyRead;
             }
@@ -185,14 +207,22 @@ public abstract class BodyConsumer {
         public void consumeInto(InputStream inputStream,
                                 OutputStream outputStream,
                                 int bufferSize) throws IOException {
+            consumeInto(inputStream, new OutputStream[]{outputStream}, bufferSize);
+        }
+
+        @Override
+        public void consumeInto(InputStream inputStream, OutputStream[] outputStream, int bufferSize) throws IOException {
             if (bufferSize <= 0) {
                 bufferSize = DEFAULT_BUFFER_SIZE;
             }
             byte[] buffer = new byte[bufferSize];
             int bytesRead;
             while ((bytesRead = inputStream.read(buffer)) > 0) {
-                outputStream.write(buffer, 0, bytesRead);
+                for (OutputStream stream : outputStream) {
+                    stream.write(buffer, 0, bytesRead);
+                }
             }
+
         }
 
         @Override

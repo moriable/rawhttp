@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.List;
+
+import jdk.internal.net.http.frame.OutgoingHeaders;
 import rawhttp.core.RawHttpHeaders;
 import rawhttp.core.Writable;
 
@@ -54,21 +56,28 @@ public class ChunkedBodyContents implements Writable {
 
         @Override
         public void writeTo(OutputStream out) throws IOException {
-            out.write(Integer.toString(size(), 16).getBytes());
-            getExtensions().forEachIO((name, value) -> {
-                out.write(';');
-                out.write(name.getBytes(US_ASCII));
-                if (!value.isEmpty()) {
-                    out.write('=');
-                    out.write(value.getBytes(US_ASCII));
-                }
-            });
-            out.write('\r');
-            out.write('\n');
-            if (size() > 0) {
-                out.write(getData());
+            writeTo(new OutputStream[] {out});
+        }
+
+        @Override
+        public void writeTo(OutputStream[] outputStream) throws IOException {
+            for (OutputStream out : outputStream) {
+                out.write(Integer.toString(size(), 16).getBytes());
+                getExtensions().forEachIO((name, value) -> {
+                    out.write(';');
+                    out.write(name.getBytes(UTF_8));
+                    if (!value.isEmpty()) {
+                        out.write('=');
+                        out.write(value.getBytes(UTF_8));
+                    }
+                });
                 out.write('\r');
                 out.write('\n');
+                if (size() > 0) {
+                    out.write(getData());
+                    out.write('\r');
+                    out.write('\n');
+                }
             }
         }
     }
@@ -120,10 +129,17 @@ public class ChunkedBodyContents implements Writable {
 
     @Override
     public void writeTo(OutputStream outputStream) throws IOException {
-        for (Chunk chunk : chunks) {
-            chunk.writeTo(outputStream);
+        writeTo(new OutputStream[]{outputStream});
+    }
+
+    @Override
+    public void writeTo(OutputStream[] outputStream) throws IOException {
+        for (OutputStream stream : outputStream) {
+            for (Chunk chunk : chunks) {
+                chunk.writeTo(stream);
+            }
+            trailerHeaders.writeTo(stream);
         }
-        trailerHeaders.writeTo(outputStream);
     }
 
     /**

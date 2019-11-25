@@ -75,10 +75,17 @@ public class RequestLine implements StartLine {
 
     @Override
     public void writeTo(OutputStream outputStream) throws IOException {
+        writeTo(new OutputStream[]{outputStream});
+    }
+
+    @Override
+    public void writeTo(OutputStream[] outputStream) throws IOException {
         byte[] bytes = toString().getBytes(StandardCharsets.UTF_8);
-        outputStream.write(bytes);
-        outputStream.write('\r');
-        outputStream.write('\n');
+        for (OutputStream stream : outputStream) {
+            stream.write(bytes);
+            stream.write('\r');
+            stream.write('\n');
+        }
     }
 
     /**
